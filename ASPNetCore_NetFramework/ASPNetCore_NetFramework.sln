@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{468DC07A-D862-463B-BEBD-CF9CB4B5D292}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F09780E-CF72-482A-B02C-C3BDDCC88DFA}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ASPNetCore_NetFramework", "src\ASPNetCore_NetFramework\ASPNetCore_NetFramework.xproj", "{766CBB53-017F-4E4A-ACC5-DE30000CA4DC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{766CBB53-017F-4E4A-ACC5-DE30000CA4DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{766CBB53-017F-4E4A-ACC5-DE30000CA4DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{766CBB53-017F-4E4A-ACC5-DE30000CA4DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{766CBB53-017F-4E4A-ACC5-DE30000CA4DC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{766CBB53-017F-4E4A-ACC5-DE30000CA4DC} = {468DC07A-D862-463B-BEBD-CF9CB4B5D292}
+	EndGlobalSection
+EndGlobal
