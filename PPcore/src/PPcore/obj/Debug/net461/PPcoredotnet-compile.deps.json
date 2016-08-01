@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETFramework,Version=v4.6.1/",
-    "signature": "10b0e64236e52369d0f1535f50deee11791955c1"
+    "signature": "816fce3b80f494684ec8270861bc6588927cb702"
   },
   "compilationOptions": {
     "defines": [
@@ -34,10 +34,20 @@
           "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc2-final",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-rc2-final",
           "Microsoft.ApplicationInsights.AspNetCore": "1.0.0-rc2-final",
-          "Microsoft.AspNet.WebApi.Client": "5.2.2"
+          "Microsoft.AspNet.WebApi.Client": "5.2.2",
+          "Microsoft.AspNet.Identity.EntityFramework": "2.2.1"
         },
         "compile": {
           "PPcore.exe": {}
+        }
+      },
+      "EntityFramework/6.1.0": {
+        "dependencies": {
+          "System.ComponentModel.DataAnnotations": "4.0.0.0"
+        },
+        "compile": {
+          "lib/net45/EntityFramework.SqlServer.dll": {},
+          "lib/net45/EntityFramework.dll": {}
         }
       },
       "iTextSharp/5.5.9": {
@@ -105,6 +115,20 @@
         },
         "compile": {
           "lib/net45/Microsoft.AI.ServerTelemetryChannel.dll": {}
+        }
+      },
+      "Microsoft.AspNet.Identity.Core/2.2.1": {
+        "compile": {
+          "lib/net45/Microsoft.AspNet.Identity.Core.dll": {}
+        }
+      },
+      "Microsoft.AspNet.Identity.EntityFramework/2.2.1": {
+        "dependencies": {
+          "EntityFramework": "6.1.0",
+          "Microsoft.AspNet.Identity.Core": "2.2.1"
+        },
+        "compile": {
+          "lib/net45/Microsoft.AspNet.Identity.EntityFramework.dll": {}
         }
       },
       "Microsoft.AspNet.WebApi.Client/5.2.2": {
@@ -1689,6 +1713,11 @@
           ".NETFramework/v4.6.1/System.Core.dll": {}
         }
       },
+      "System.ComponentModel.DataAnnotations/4.0.0.0": {
+        "compile": {
+          ".NETFramework/v4.6.1/System.ComponentModel.DataAnnotations.dll": {}
+        }
+      },
       "System.Net.Http/4.0.0.0": {
         "compile": {
           ".NETFramework/v4.6.1/System.Net.Http.dll": {}
@@ -1712,11 +1741,6 @@
       "System.Configuration/4.0.0.0": {
         "compile": {
           ".NETFramework/v4.6.1/System.Configuration.dll": {}
-        }
-      },
-      "System.ComponentModel.DataAnnotations/4.0.0.0": {
-        "compile": {
-          ".NETFramework/v4.6.1/System.ComponentModel.DataAnnotations.dll": {}
         }
       },
       "System.ObjectModel/4.0.10.0": {
@@ -1785,10 +1809,20 @@
           "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc2-final",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-rc2-final",
           "Microsoft.ApplicationInsights.AspNetCore": "1.0.0-rc2-final",
-          "Microsoft.AspNet.WebApi.Client": "5.2.2"
+          "Microsoft.AspNet.WebApi.Client": "5.2.2",
+          "Microsoft.AspNet.Identity.EntityFramework": "2.2.1"
         },
         "runtime": {
           "PPcore.exe": {}
+        }
+      },
+      "EntityFramework/6.1.0": {
+        "dependencies": {
+          "System.ComponentModel.DataAnnotations": "4.0.0.0"
+        },
+        "runtime": {
+          "lib/net45/EntityFramework.SqlServer.dll": {},
+          "lib/net45/EntityFramework.dll": {}
         }
       },
       "iTextSharp/5.5.9": {
@@ -1856,6 +1890,20 @@
         },
         "runtime": {
           "lib/net45/Microsoft.AI.ServerTelemetryChannel.dll": {}
+        }
+      },
+      "Microsoft.AspNet.Identity.Core/2.2.1": {
+        "runtime": {
+          "lib/net45/Microsoft.AspNet.Identity.Core.dll": {}
+        }
+      },
+      "Microsoft.AspNet.Identity.EntityFramework/2.2.1": {
+        "dependencies": {
+          "EntityFramework": "6.1.0",
+          "Microsoft.AspNet.Identity.Core": "2.2.1"
+        },
+        "runtime": {
+          "lib/net45/Microsoft.AspNet.Identity.EntityFramework.dll": {}
         }
       },
       "Microsoft.AspNet.WebApi.Client/5.2.2": {
@@ -3326,12 +3374,12 @@
       "mscorlib/4.0.0.0": {},
       "System/4.0.0.0": {},
       "System.Core/4.0.0.0": {},
+      "System.ComponentModel.DataAnnotations/4.0.0.0": {},
       "System.Net.Http/4.0.0.0": {},
       "System.Security/4.0.0.0": {},
       "System.Xml/4.0.0.0": {},
       "System.Xml.Linq/4.0.0.0": {},
       "System.Configuration/4.0.0.0": {},
-      "System.ComponentModel.DataAnnotations/4.0.0.0": {},
       "System.ObjectModel/4.0.10.0": {},
       "System.Data/4.0.0.0": {},
       "System.Transactions/4.0.0.0": {},
@@ -3348,6 +3396,11 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "EntityFramework/6.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-u/M0OEfqxTUsL5BwzD66eBGm278/ozqdLK3JvMO6QwUxxc+z7ZUkTYm4suDhWRqzkc6mOhvXDQY5dZUwbldxyQ=="
     },
     "iTextSharp/5.5.9": {
       "type": "package",
@@ -3393,6 +3446,16 @@
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-M3lC/KAWnevK/fmXQHdQ4jFWLurYdUpnOsF6m+HtjHcgJiprdsEohYXFImFp7u2ZodCqwIhxkVLIjFFvKSXoPw=="
+    },
+    "Microsoft.AspNet.Identity.Core/2.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jjurNglpmcv0SLBd4Fmar8ZoJ2yqfTf6iuP3p8wVH7Nvanfo8l3qTBzq3qRQz2BQlb6iXJiDWPjcnIImVz512g=="
+    },
+    "Microsoft.AspNet.Identity.EntityFramework/2.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-g3tCS3vZ+hPjqrGrkq2hpl2Wc5Ltaj+kInZM80uENHldTHmrvCpVXvTXcvTt7HU3vupjmYFfNWVFRWCypNZgug=="
     },
     "Microsoft.AspNet.WebApi.Client/5.2.2": {
       "type": "package",
@@ -4279,6 +4342,11 @@
       "serviceable": false,
       "sha512": ""
     },
+    "System.ComponentModel.DataAnnotations/4.0.0.0": {
+      "type": "referenceassembly",
+      "serviceable": false,
+      "sha512": ""
+    },
     "System.Net.Http/4.0.0.0": {
       "type": "referenceassembly",
       "serviceable": false,
@@ -4300,11 +4368,6 @@
       "sha512": ""
     },
     "System.Configuration/4.0.0.0": {
-      "type": "referenceassembly",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "System.ComponentModel.DataAnnotations/4.0.0.0": {
       "type": "referenceassembly",
       "serviceable": false,
       "sha512": ""
