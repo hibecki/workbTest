@@ -13,12 +13,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using PPcore.Services;
 
 namespace PPcore.Controllers
 {
+    [Authorize]
     public class membersController : Controller
     {
         private PalangPanyaDBContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
         private IConfiguration _configuration;
         private IHostingEnvironment _env;
 
@@ -64,19 +72,44 @@ namespace PPcore.Controllers
             ViewBag.ini_province = new SelectList(ip.AsEnumerable(), "Value", "Text", "0");
         }
 
-        public membersController(PalangPanyaDBContext context, IConfiguration configuration, IHostingEnvironment env)
+        public membersController(PalangPanyaDBContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, IConfiguration configuration, IHostingEnvironment env)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _emailSender = emailSender;
             _configuration = configuration;
             _env = env;
+        }
+
+        public void SendEmail(string email, string username, string password)
+        {
+            var title = "พลังปัญญา";
+            var body = "ชื่อผู้ใช้งาน: " + username + "\nรหัสผ่าน: " + password;
+            _emailSender.SendEmailAsync(email, title, body);
         }
 
         // GET: members
         public IActionResult Index()
         {
-            var palangPanyaDBContext = _context.member; //.Include(m => m.ini_list_zip).Include(m => m.mem_).Include(m => m.mlevel_codeNavigation).Include(m => m.mstatus_codeNavigation);
-            ViewBag.countRecords = palangPanyaDBContext.Count();
-            return View(palangPanyaDBContext.OrderByDescending(m => m.rowversion).ToList());
+            if (User.IsInRole("Administrators") || User.IsInRole("Operators"))
+            {
+                var pp = _context.member; //.Include(m => m.ini_list_zip).Include(m => m.mem_).Include(m => m.mlevel_codeNavigation).Include(m => m.mstatus_codeNavigation);
+                ViewBag.countRecords = pp.Count();
+                return View(pp.OrderByDescending(m => m.rowversion).ToList());
+            }
+            else if (User.IsInRole("Members"))
+            {
+                var mcode = User.Identity.Name;
+                var m = _context.member.SingleOrDefault(mm => mm.member_code == mcode);
+                var mid = m.id;
+                return RedirectToAction(nameof(membersController.Edit) + "/" + mid, "members");
+            }
+            else
+            {
+                return RedirectToAction(nameof(AccountController.Login), "Account");
+            }
+
         }
 
         // GET: members/Details/5
@@ -270,13 +303,24 @@ namespace PPcore.Controllers
             var logoPath = Path.Combine(_env.WebRootPath, "images");
             logoPath = Path.Combine(logoPath, "logonew.jpg");
             Image logo = Image.GetInstance(logoPath);
-            logo.ScalePercent(30);
+            //logo.ScalePercent(30);
+            logo.ScalePercent(13);
             logo.Alignment = Element.ALIGN_CENTER;
 
-            var memPhoto =  m.mem_photo != null ? m.mem_photo : "dummy_person_0.jpg";
-            var memberPicPath = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), memPhoto);
+            Image memberPic;
+            if (m.mem_photo != null)
+            {
+                pic_image pii = _context.pic_image.SingleOrDefault(piii => piii.image_code == m.mem_photo);
+                byte[] imageBytes = Convert.FromBase64String(pii.image_file);
+                MemoryStream ms = new MemoryStream(imageBytes, 0, imageBytes.Length);
+                memberPic = Image.GetInstance(ms);
+            }
+            else
+            {
+                var memberPicPath = Path.Combine(_env.WebRootPath, "images/dummy_person.jpg");
+                memberPic = Image.GetInstance(memberPicPath);
+            }
 
-            Image memberPic = Image.GetInstance(memberPicPath);
             memberPic.ScaleToFit(120f, 120f);
             memberPic.Border = Rectangle.BOX;
             memberPic.BorderColor = BaseColor.DARK_GRAY;
@@ -389,7 +433,7 @@ namespace PPcore.Controllers
             memberInfoRow5.LockedWidth = true;
             memberInfoRow5.DefaultCell.VerticalAlignment = 1;
             memberInfoRow5.SetWidths(new float[] { 25f, 135f, 23f, 122f });
-            memberInfoRow5.AddCell(new PdfPCell(new Phrase("แฟ็กส์", cnb)) { Border = Rectangle.NO_BORDER });
+            memberInfoRow5.AddCell(new PdfPCell(new Phrase("แฟกซ์", cnb)) { Border = Rectangle.NO_BORDER });
             memberInfoRow5.AddCell(new PdfPCell(new Phrase(fax, cni)) { Border = Rectangle.NO_BORDER });
             memberInfoRow5.AddCell(new PdfPCell(new Phrase("อีเมล", cnb)) { Border = Rectangle.NO_BORDER });
             memberInfoRow5.AddCell(new PdfPCell(new Phrase(email, cni)) { Border = Rectangle.NO_BORDER });
@@ -958,20 +1002,33 @@ namespace PPcore.Controllers
                 {
                     var fileName = member.mem_photo.Substring(9);
                     var fileExt = Path.GetExtension(fileName);
+
+                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.mem_photo);
+                    //var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
+                    //System.IO.File.Copy(s, d, true);
+                    //System.IO.File.Delete(s);
+
                     pic_image m = new pic_image();
                     m.image_code = "M" + DateTime.Now.ToString("yyMMddhhmmssfffffff") + fileExt;
                     m.x_status = "Y";
                     m.image_name = fileName;
-
+                    string base64String = "";
+                    using (System.Drawing.Image image = System.Drawing.Image.FromFile(s))
+                    {
+                        using (MemoryStream mem = new MemoryStream())
+                        {
+                            image.Save(mem, image.RawFormat);
+                            byte[] imageBytes = mem.ToArray();
+                            base64String = Convert.ToBase64String(imageBytes);
+                        }
+                    }
+                    m.image_file = base64String;
                     m.ref_doc_type = "member";
                     m.ref_doc_code = member.member_code;
                     fileName = m.image_code;
                     _context.pic_image.Add(m);
                     _context.SaveChanges();
 
-                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.mem_photo);
-                    var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
-                    System.IO.File.Copy(s, d, true);
                     System.IO.File.Delete(s);
                     clearImageUpload();
 
@@ -981,26 +1038,67 @@ namespace PPcore.Controllers
                 {
                     var fileName = member.cid_card_pic.Substring(9);
                     var fileExt = Path.GetExtension(fileName);
+
+                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.cid_card_pic);
+                    //var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
+                    //System.IO.File.Copy(s, d, true);
+                    //System.IO.File.Delete(s);
+
                     pic_image pic_image = new pic_image();
                     pic_image.image_code = "C" + DateTime.Now.ToString("yyMMddhhmmssfffffff") + fileExt;
                     pic_image.x_status = "Y";
                     pic_image.image_name = fileName;
+                    string base64String = "";
+                    using (System.Drawing.Image image = System.Drawing.Image.FromFile(s))
+                    {
+                        using (MemoryStream mem = new MemoryStream())
+                        {
+                            image.Save(mem, image.RawFormat);
+                            byte[] imageBytes = mem.ToArray();
+                            base64String = Convert.ToBase64String(imageBytes);
+                        }
+                    }
+                    pic_image.image_file = base64String;
                     pic_image.ref_doc_type = "cidcard";
                     pic_image.ref_doc_code = member.member_code;
                     fileName = pic_image.image_code;
                     _context.pic_image.Add(pic_image);
                     _context.SaveChanges();
 
-                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.cid_card_pic);
-                    var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
-                    System.IO.File.Copy(s, d, true);
                     System.IO.File.Delete(s);
                     clearImageUpload();
 
                     member.cid_card_pic = pic_image.image_code;
                 }
+                string password = member.cid_card.Substring(member.cid_card.Length - 4);
+                var user = new ApplicationUser { UserName = member.cid_card, Email = member.email };
+                _userManager.CreateAsync(user, password);
+                _userManager.AddToRoleAsync(user, "Members");
+                System.Security.Claims.Claim cl = new System.Security.Claims.Claim("fullName", member.fname + " " + member.lname);
+                _userManager.AddClaimAsync(user, cl);
+                _signInManager.SignInAsync(user, isPersistent: false);
+                SendEmail(member.email, member.cid_card, password);
+
+                //var result = await _userManager.CreateAsync(user, password);
+
+                //if (result.Succeeded)
+                //{
+                //    await _userManager.AddToRoleAsync(user, "Members");
+                //    System.Security.Claims.Claim cl = new System.Security.Claims.Claim("fullName", fname + " " + lname);
+                //    await _userManager.AddClaimAsync(user, cl);
+                //    await _signInManager.SignInAsync(user, isPersistent: false);
+                //    _logger.LogInformation(3, "User created a new account with password.");
+                //    SendEmail(email, cid_card, password);
+                //}
+                //else
+                //{
+                //    return Json(new { result = "fail", error_code = -1, error_message = "userManaget cannot create user!" });
+                //}
+
                 _context.member.Add(member);
                 _context.SaveChanges();
+
+
                 return RedirectToAction("Index");
             }
 
@@ -1058,6 +1156,11 @@ namespace PPcore.Controllers
         {
             if (ModelState.IsValid)
             {
+                var mo = _context.member.SingleOrDefault(moo => moo.id == new Guid(id));
+                var mem_photo_old = mo.mem_photo;
+                var cid_card_pic_old = mo.cid_card_pic;
+                _context.Entry(mo).State = EntityState.Detached;
+
                 member.x_status = "Y";
                 if (member.title == "0") { member.title = null; }
                 if (member.marry_status == "0") { member.marry_status = null; }
@@ -1069,10 +1172,28 @@ namespace PPcore.Controllers
                 {
                     var fileName = member.mem_photo.Substring(9);
                     var fileExt = Path.GetExtension(fileName);
+
+                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.mem_photo);
+                    //var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
+                    //System.IO.File.Copy(s, d, true);
+                    //System.IO.File.Delete(s);
+
                     pic_image m = new pic_image();
                     m.image_code = "M" + DateTime.Now.ToString("yyMMddhhmmssfffffff") + fileExt;
                     m.x_status = "Y";
                     m.image_name = fileName;
+
+                    string base64String = "";
+                    using (System.Drawing.Image image = System.Drawing.Image.FromFile(s))
+                    {
+                        using (MemoryStream mem = new MemoryStream())
+                        {
+                            image.Save(mem, image.RawFormat);
+                            byte[] imageBytes = mem.ToArray();
+                            base64String = Convert.ToBase64String(imageBytes);
+                        }
+                    }
+                    m.image_file = base64String;
 
                     m.ref_doc_type = "member";
                     m.ref_doc_code = member.member_code;
@@ -1080,11 +1201,15 @@ namespace PPcore.Controllers
                     _context.pic_image.Add(m);
                     _context.SaveChanges();
 
-                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.mem_photo);
-                    var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
-                    System.IO.File.Copy(s, d, true);
                     System.IO.File.Delete(s);
                     clearImageUpload();
+
+                    var pmold = _context.pic_image.SingleOrDefault(pp => pp.image_code == mem_photo_old);
+                    if (pmold != null)
+                    {
+                        _context.pic_image.Remove(pmold);
+                        _context.SaveChanges();
+                    }
 
                     member.mem_photo = m.image_code;
                 }
@@ -1092,21 +1217,44 @@ namespace PPcore.Controllers
                 {
                     var fileName = member.cid_card_pic.Substring(9);
                     var fileExt = Path.GetExtension(fileName);
+
+                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.cid_card_pic);
+                    //var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
+                    //System.IO.File.Copy(s, d, true);
+                    //System.IO.File.Delete(s);
+
                     pic_image pic_image = new pic_image();
                     pic_image.image_code = "C" + DateTime.Now.ToString("yyMMddhhmmssfffffff") + fileExt;
                     pic_image.x_status = "Y";
                     pic_image.image_name = fileName;
+
+                    string base64String = "";
+                    using (System.Drawing.Image image = System.Drawing.Image.FromFile(s))
+                    {
+                        using (MemoryStream mem = new MemoryStream())
+                        {
+                            image.Save(mem, image.RawFormat);
+                            byte[] imageBytes = mem.ToArray();
+                            base64String = Convert.ToBase64String(imageBytes);
+                        }
+                    }
+                    pic_image.image_file = base64String;
+
                     pic_image.ref_doc_type = "cidcard";
                     pic_image.ref_doc_code = member.member_code;
                     fileName = pic_image.image_code;
                     _context.pic_image.Add(pic_image);
                     _context.SaveChanges();
 
-                    var s = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value), member.cid_card_pic);
-                    var d = Path.Combine(Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_member").Value), fileName);
-                    System.IO.File.Copy(s, d, true);
                     System.IO.File.Delete(s);
                     clearImageUpload();
+
+                    var pmold = _context.pic_image.SingleOrDefault(pp => pp.image_code == cid_card_pic_old);
+                    if (pmold != null)
+                    {
+                        _context.pic_image.Remove(pmold);
+                        _context.SaveChanges();
+                    }
 
                     member.cid_card_pic = pic_image.image_code;
                 }
@@ -1121,6 +1269,7 @@ namespace PPcore.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> uploadMemPhoto(ICollection<IFormFile> fileMemPhoto)
         {
             var uploads = Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value);
@@ -1132,7 +1281,13 @@ namespace PPcore.Controllers
                 {
                     fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
                     fileExt = Path.GetExtension(fileName);
+
+                    //fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length))) + fileExt;
+                    //fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length)));
+
+                    fileName = fileName.Substring(0, fileName.Length - fileExt.Length);
                     fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length))) + fileExt;
+
                     using (var SourceStream = file.OpenReadStream())
                     {
                         using (var fileStream = new FileStream(Path.Combine(uploads, filePrefix + fileName), FileMode.Create))
@@ -1147,6 +1302,7 @@ namespace PPcore.Controllers
 
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> uploadCidCardPhoto(ICollection<IFormFile> fileCidCardPhoto)
         {
             var uploads = Path.Combine(_env.WebRootPath, _configuration.GetSection("Paths").GetSection("images_upload").Value);
@@ -1159,7 +1315,12 @@ namespace PPcore.Controllers
                 {
                     fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
                     fileExt = Path.GetExtension(fileName);
+                    //fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length))) + fileExt;
+                    //fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length)));
+
+                    fileName = fileName.Substring(0, fileName.Length - fileExt.Length);
                     fileName = fileName.Substring(0, (fileName.Length <= (50 - fileExt.Length) ? fileName.Length : (50 - fileExt.Length))) + fileExt;
+
                     using (var SourceStream = file.OpenReadStream())
                     {
                         using (var fileStream = new FileStream(Path.Combine(uploads, filePrefix + fileName), FileMode.Create))

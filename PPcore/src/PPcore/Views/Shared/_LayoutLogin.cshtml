@@ -86,7 +86,7 @@
             $(document).ready(function () {
                 var con = '@ViewContext.RouteData.Values["controller"]';
                 var act = '@ViewContext.RouteData.Values["action"]';
-                if (act == "Register") {
+                if (act == "RegisterMember") {
                     $.datepicker.regional['th'] = {
                         dateFormat: 'dd-mm-yy', changeMonth: true, changeYear: true, constrainInput: true,
                         yearRange: "-100:+0", yearOffSet: 543, beforeShow: dateDefault
@@ -102,6 +102,7 @@
                 if ($("#birthdate").val() == "") { $("#birthdate").datepicker("setDate", new Date()); }
             }
             function confirm() {
+                $('#waitBtnConfirm').show();
                 var cid_card = $('#cid_card').val().trim();
                 var fname = $('#fname').val().trim();
                 var lname = $('#lname').val().trim();
@@ -117,15 +118,18 @@
                         if (resp.result == "success") {
                             window.location.replace("@Url.Action("Index","Home")");
                         } else if (resp.result == "fail") {
+                            $('#waitBtnConfirm').hide();
                             $('#registerMsg').text('กรุณาตรวจสอบความถูกต้องของข้อมูล');
                             $('#registerModal').modal({ backdrop: 'static', keyboard: false });
                         }
                     });
                 } else {
+                    $('#waitBtnConfirm').hide();
                     $('#registerModal').modal({ backdrop: 'static', keyboard: false });
                 }
             }
             function login() {
+                $('#waitBtnConfirm').show();
                 var uname = $('#uname').val().trim();
                 var upwd = $('#upwd').val().trim();
                 if ((uname != '') && (upwd != '')) {
@@ -134,13 +138,16 @@
                         url: '@Url.Action("Login", "Account")' + "?uname=" + uname + "&upwd=" + upwd,
                     }).done(function (resp) {
                         if (resp.result == "success") {
-                            window.location.replace("@Url.Action("Index","members")");
+                            //window.location.replace("@Url.Action("Index","members")");
+                            window.location.replace("@Url.Action("Index","Home")");
                         } else if (resp.result == "fail") {
+                            $('#waitBtnConfirm').hide();
                             $('#loginMsg').text('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง');
                             $('#loginModal').modal({ backdrop: 'static', keyboard: false });
                         }
                     });
                 } else {
+                    $('#waitBtnConfirm').hide();
                     $('#loginModal').modal({ backdrop: 'static', keyboard: false });
                 }
             }

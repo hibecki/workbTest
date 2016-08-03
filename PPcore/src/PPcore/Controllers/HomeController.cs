@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PPcore.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System;
 
 namespace PPcore.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private PalangPanyaDBContext _context;
@@ -14,17 +19,7 @@ namespace PPcore.Controllers
 
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        public IActionResult Error()
-        {
-            return View();
+            return RedirectToAction(nameof(membersController.Index), "members");
         }
     }
 }

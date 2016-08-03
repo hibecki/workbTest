@@ -1119,3 +1119,5 @@ INSERT [ini_subdistrict] ([country_code], [province_code], [district_code], [sub
 INSERT [ini_subdistrict] ([country_code], [province_code], [district_code], [subdistrict_code], [dist_desc], [area_part], [x_status], [x_note], [x_log], [id]) VALUES (66, N'20000000', N'20110000', N'20110200', N'ท่าบุญมี', NULL, NULL, NULL, NULL, N'1ab98c20-23a4-43e3-9f32-8c406ec3fea9')
 INSERT [ini_subdistrict] ([country_code], [province_code], [district_code], [subdistrict_code], [dist_desc], [area_part], [x_status], [x_note], [x_log], [id]) VALUES (66, N'20000000', N'20720000', N'20720100', N'หนองปรือ', NULL, NULL, NULL, NULL, N'e1582684-48f4-4f3d-ab58-3b75d1714b23')
 
+
+

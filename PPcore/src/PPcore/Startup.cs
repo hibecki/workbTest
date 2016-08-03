@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PPcore.Data;
 using PPcore.Models;
 using PPcore.Services;
 using System.Collections.Generic;
@@ -47,11 +46,26 @@ namespace PPcore
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(i => {
+                i.User.RequireUniqueEmail = false;
+                i.Password.RequireDigit = false;
+                i.Password.RequireLowercase = false;
+                i.Password.RequireUppercase = false;
+                i.Password.RequireNonAlphanumeric = false; ;
+                i.Password.RequiredLength = 1;
+                i.SignIn.RequireConfirmedEmail = false;
+                i.SignIn.RequireConfirmedPhoneNumber = false;
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddSingleton(Configuration);
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdministratorRights", policy => policy.RequireRole("Administrators"));
+                options.AddPolicy("OperationRights", policy => policy.RequireRole("Administrators", "Operators"));
+            });
 
             // Add framework services.
             services.AddMvc();

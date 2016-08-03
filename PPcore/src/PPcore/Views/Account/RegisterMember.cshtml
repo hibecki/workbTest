@@ -13,19 +13,19 @@
                     <span class="input-group-addon">
                         <i class="fa fa-credit-card"></i>
                     </span>
-                    <input id="cid_card" type="text" class="form-control" placeholder="รหัสบัตรประชาชน" onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="13" />
+                    <input id="cid_card" type="text" class="form-control" placeholder="รหัสบัตรประชาชน" onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="13" autocomplete="off"/>
                 </div>
                 <div class="form-group input-group">
                     <span class="input-group-addon">
                         <i class="fa fa-user">&nbsp;</i>
                     </span>
-                    <input id="fname" type="text" class="form-control" placeholder="ชื่อ" onkeypress="return !(event.charCode >= 48 && event.charCode <= 57)" />
+                    <input id="fname" type="text" class="form-control" placeholder="ชื่อ" onkeypress="return !(event.charCode >= 48 && event.charCode <= 57)" autocomplete="off" />
                 </div>
                 <div class="form-group input-group">
                     <span class="input-group-addon">
                         <i class="fa fa-users"></i>
                     </span>
-                    <input id="lname" type="text" class="form-control" placeholder="นามสกุล" onkeypress="return !(event.charCode >= 48 && event.charCode <= 57)" />
+                    <input id="lname" type="text" class="form-control" placeholder="นามสกุล" onkeypress="return !(event.charCode >= 48 && event.charCode <= 57)" autocomplete="off" />
                 </div>
                 <div class="form-group input-group">
                     <input id="birthdate" type="text" class="form-control" placeholder="วันเดือนปีเกิด" readonly style="background-color:white" />
@@ -72,9 +72,11 @@
                         </button>
                     </span>
                 </div>
-                <button class="btn btn-default btn-panel-yellow pull-left" type="button" style="width:120px" onclick="confirm();" > ยืนยัน </button>
-                <button class="btn btn-default btn-panel-yellow pull-right" type="button" style="width:120px" onclick="location.href='@Url.Action("Index", "members")'">เข้าสู่ระบบ</button>
-
+                <button class="btn btn-default btn-panel-yellow pull-left" type="button" style="width:120px" onclick='confirm();' > ยืนยัน </button>
+                <button class="btn btn-default btn-panel-yellow pull-right" type="button" style="width:120px" onclick="location.href='@Url.Action("Login", "Account")'">เข้าสู่ระบบ</button>
+                <div id="waitBtnConfirm" style="display:none;position:absolute;top:603px;text-align:center;height:34px;width:260px;background-color:#FFC000;z-index:11;border-radius:5px;">
+                    <i class="fa fa-refresh fa-spin fa-2x" style="margin-top:3px;color:gray;" aria-hidden="true"></i>
+                </div>
             </form>
             <br/>
             
