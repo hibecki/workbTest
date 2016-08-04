@@ -20,11 +20,15 @@ namespace PPcore.Models
             // Customize the ASP.NET Identity model and override the defaults if needed.
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
-            builder.Entity<ApplicationUser>(b =>
-            {
-                b.ToTable("SecUsers");
-                b.Property(u => u.FullName).HasMaxLength(256);
-            });
+
+            //Also need to manual create table and add field
+            //builder.Entity<ApplicationUser>(b =>
+            //{
+            //    b.ToTable("SecUsers");
+            //    b.Property(u => u.FullName).HasMaxLength(256);
+            //});
+
+
         }
     }
 }
